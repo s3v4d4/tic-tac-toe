@@ -1,0 +1,50 @@
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Raleway', sans-serif;
+    font-family: 'Roboto', sans-serif;
+}
+
+.container {
+    background-color: white;
+    height: 70%;
+    width: 70%;
+    box-shadow: 5px 5px 10px lightgray;
+    border-radius: 10px;
+    border: solid 3px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 20px;
+}
+
+.game {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    background-color: black;
+    grid-gap: 5px;
+    flex: 3;
+}
+
+.header {
+    flex: 1;
+    background-color: yellow;
+}
+
+.footer {
+    flex: 1;
+    background-color: green;
+}
+
+.child {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-weight: 700;
+    font-size: 4rem;
+}
