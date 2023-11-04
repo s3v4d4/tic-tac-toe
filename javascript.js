@@ -12,9 +12,13 @@ const Gameboard = (function () {
       board[x][y] = value;
     }
 
+    const getValue = function (x,y){
+      return board[x][y];
+    }
+
     reset();
 
-    return {board,reset,fillValue};
+    return {board,reset,fillValue,getValue};
   })();
 
 // Object that will control the game
@@ -26,15 +30,12 @@ const Game = (function () {
 
   const players = [player1,player2];
 
-  gameboard.board[1][1] = 'O';
-
   const displayBoard = function (){
     const boxes = document.querySelectorAll('.child');
     for (let i = 0; i < gameboard.board.length;i++){
       for(let j = 0; j < gameboard.board[i].length;j++){
         if (gameboard.board[i][j] != null){
           boxes[i*gameboard.board[i].length+j].innerHTML = gameboard.board[i][j];
-          console.log(gameboard.board[i][j]);
         }
       }
     }
@@ -58,12 +59,65 @@ const Game = (function () {
         if (player.isTurn()){
           let x = Math.floor(index/3);
           let y = index % 3;
-          gameboard.fillValue(x,y,player.symbol);
+          if (gameboard.getValue(x,y) === null) {gameboard.fillValue(x,y,player.symbol);}
         }
       }
       changeTurns();
       displayBoard();
+      
+      let win = checkWin();
+      let tie = checkTie();
+      console.log(win);
+      if (win === true){
+        console.log("You won the game!");
+      }else if (tie == true){
+        console.log("This game is a tie!");
+      }
     })
+
+    const checkTie = function (){
+      let flatArray = gameboard.board.flat();
+      return !flatArray.includes(null);
+    }
+
+    const checkWin = function (){
+      // Define separate functions that check each individual possiblity
+      
+      const checkRows= function (){
+        let win = false;
+        // Check whether each row or subarray contains the same elements 
+        for (row of gameboard.board){
+          win = win || row.every((val,i,arr) => val === arr[0] && arr[0] != null);
+        }
+        return win;
+      }
+
+      const checkColumns = function (){
+        let win = false;
+        for(let i = 0;i<gameboard.board.length;i++){
+          // Select all the i'th elements in the subarray to form the column
+          let column = gameboard.board.map(function(value,index) { return value[i]; })
+          win = win || column.every((val,i,arr) => val === arr[0] && arr[0] != null);
+        }
+        return win;
+      }
+
+      const checkDiagonals = function (){
+        let win = false; 
+        let diagonal1 = [];
+        let diagonal2 = [];
+        let len = gameboard.board.length;
+        for (let i = 0; i < len;i++){
+          diagonal1.push(gameboard.board[i][i]);
+          diagonal2.push(gameboard.board[len-i-1][i]);
+        }
+        win = diagonal1.every((val,i,arr) => val === arr[0] && arr[0] != null) 
+              || diagonal2.every((val,i,arr) => val === arr[0] && arr[0] != null);
+        return win;
+      }
+
+      return checkColumns() || checkRows() || checkDiagonals();
+    }
   })
 
   return {gameboard,displayBoard,players};
