@@ -3,6 +3,7 @@ const Gameboard = (function () {
     const board = [];
     
     const reset = function () {
+      board.length = 0;
       for (i=0;i<3;i++){
         board.push(new Array(3).fill(null));    
       }
@@ -30,12 +31,22 @@ const Game = (function () {
 
   const players = [player1,player2];
 
+  let gameEnded = false;
+
+  const startGame = function() {
+    gameEnded = false;
+    player1.setTurn(true);
+    player2.setTurn(false);
+  }
+
   const displayBoard = function (){
     const boxes = document.querySelectorAll('.child');
     for (let i = 0; i < gameboard.board.length;i++){
       for(let j = 0; j < gameboard.board[i].length;j++){
         if (gameboard.board[i][j] != null){
           boxes[i*gameboard.board[i].length+j].innerHTML = gameboard.board[i][j];
+        }else{
+          boxes[i*gameboard.board[i].length+j].innerHTML = "";
         }
       }
     }
@@ -110,6 +121,8 @@ const Game = (function () {
     box.addEventListener('click', (e) => {
       // find on which box the player clicked by finding out 
       // which child of the parent emitted the event
+      if (gameEnded) return;
+      
       let parent = box.parentNode;
       let index = Array.prototype.indexOf.call(parent.children,box);
       for (player of players){
@@ -117,6 +130,7 @@ const Game = (function () {
           let x = Math.floor(index/3);
           let y = index % 3;
           if (gameboard.getValue(x,y) === null) {gameboard.fillValue(x,y,player.symbol);}
+          else return;
         }
       }
 
@@ -128,6 +142,7 @@ const Game = (function () {
       displayBoard();
       checkWinner(gameboard,players);
       changeTurns();
+      
     })
   })
 
@@ -136,15 +151,26 @@ const Game = (function () {
     let player2win = checkWin(gameboard.board,players[1].symbol);
 
     let tie = checkTie(gameboard.board);
+    const dialog = document.querySelector('.msg');
 
     if (player1win){
-      console.log("Player 1 won the game!");
+      dialog.innerHTML = "Player won the game!";
+      player1.increaseScore();
+      gameEnded = true;
     }else if (tie){
-      console.log("This game is a tie!");
+      dialog.innerHTML = "This game is a tie!";
+      gameEnded = true;
     }else if (player2win){
-      console.log("Player 2 won the game!")
+      dialog.innerHTML = "Computer won the game!";
+      player2.increaseScore();
+      gameEnded = true;
     }
-
+    
+   const scores = document.querySelectorAll('.score');
+    for (let i=0;i<scores.length;i++){
+      scores[i].innerHTML = players[i].getScore();
+    }
+    
   }
   
   const checkTie = function (array){
@@ -192,7 +218,7 @@ const Game = (function () {
   }
   
 
-  return {gameboard,displayBoard,players};
+  return {gameboard,displayBoard,changeTurns,startGame,players};
 })()
 
 // Factory function that will create player
@@ -204,13 +230,23 @@ function createPlayer(name,symbol,firstMove){
   const changeTurn = () => {myTurn = !myTurn};
 
   const isTurn = () => myTurn;
+  const setTurn = (turn) => {myTurn = turn};
 
   const getScore = () => score;
   const increaseScore = () => score++;
 
-  return {name,symbol,getScore,increaseScore,changeTurn,isTurn};
+  return {name,symbol,getScore,setTurn,increaseScore,changeTurn,isTurn};
 }
 
 console.log(Gameboard);
 
 Game.displayBoard();
+
+const button = document.querySelector('button');
+const dialog = document.querySelector('.msg');
+button.addEventListener('click',(e) => {
+  Gameboard.reset();
+  Game.startGame();
+  Game.displayBoard();
+  dialog.innerHTML = "";
+});
